@@ -18,7 +18,7 @@ function setup() {
 function draw() {
   background(...palette.bg);
 
-  S.draw();
+  S.draw(frameCount*2);
 }
 
 class Spiral {
