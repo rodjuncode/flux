@@ -18,7 +18,7 @@ const facePath =
 const chinPath =
   "M121.14.44c4.52,43.77,9.44,145.98-43.3,144.76C28.46,144.07,7.9,49.77.49.07";
 const faceShadowPath =
-  "M80.42,79.96c-6.66-10.53,10.36-35.64,10.36-35.64M47.38,76.04s10.65-16.45,0-8c-11.55,9.17-18,2.17-18,2.17M65.34,108.78c-7-4.07-21.19,2.34-21.19,2.34M6.84,22.03c3.63,2.25,6.41,5.65,8.11,9.57l11.27,25.99s-5.33-23.11-11.56-33.33S0,21.44,0,21.44c1.71-1.78,4.37-.94,6.84.59ZM83.83,1.17c-19.18-5.53-43.37,10.33-43.37,10.33M64.23,90.32c-11.31-1.84-28.14,3.54-28.14,3.54M108.31,8.94s-5.22,18.32-1.53,23.7";
+  "M80.42,74.9c-6.66-10.53,10.36-35.64,10.36-35.64M47.38,70.97s10.65-16.45,0-8c-11.55,9.17-18,2.17-18,2.17M65.34,103.72c-7-4.07-21.19,2.34-21.19,2.34M6.84,16.97c3.63,2.25,6.41,5.65,8.11,9.57l11.27,25.99s-5.33-23.11-11.56-33.33S0,16.38,0,16.38c1.71-1.78,4.37-.94,6.84.59ZM78.77,1.17c-19.18-5.53-43.37,10.33-43.37,10.33M64.23,85.26c-11.31-1.84-28.14,3.54-28.14,3.54M108.31,3.88s-5.22,18.32-1.53,23.7";
 const faceGlowPath =
   "M.96,56.71c12.17,68.68,54.13,139.43,81.77,127.15s37.19-68.33,25.02-137.02C95.59-21.84-11.2-11.97.96,56.71Z";
 const bodyGlowPath =
@@ -50,11 +50,21 @@ function draw() {
 
   drawCharacter();
 
+  // balloon
+  push();
+  fill(255);
+  stroke(255);
+  rectMode(CENTER);
+  translate(scaler.width() / 2 - 5, scaler.height() / 2 - 220);
+  rotate(-0.025);
+  rect(0, 0, 100, 100, 10);
+  pop();
+
   // draws a white frame with rounded corner
   noFill();
   stroke(255);
   strokeWeight(30);
-  rect(0, 0, scaler.width(), scaler.height(), 30);
+  rect(0, 0, scaler.width(), scaler.height(), 25);
 }
 
 function drawCharacter() {
@@ -112,7 +122,7 @@ function drawCharacter() {
 
   // body glow
   push();
-  translate(175, 571);
+  translate(175, 575);
   fill(0, 0, 100, 0.4);
   let bodyGlow = new Path2D(bodyGlowPath);
   drawingContext.fill(bodyGlow);
@@ -120,7 +130,7 @@ function drawCharacter() {
 
   // faceshadow
   push();
-  translate(198, 440);
+  translate(198, 448);
   fill(0, 0, 0, 0.8);
   let faceShadow = new Path2D(faceShadowPath);
   drawingContext.fill(faceShadow);
