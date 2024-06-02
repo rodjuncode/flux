@@ -1,7 +1,6 @@
 let palette = {};
 let S;
-let P = 0;
-let bodyStroke, chinStroke;
+let bodyStroke, chinStroke, chinShadowStroke, faceStroke;
 
 const bodyPath =
   "M87.23,234.72C129.71,157.64,73.9.5,73.9.5h101.11s13.33,122,53.33,203.33,99.33,128.67,99.33,128.67H1.68s49.56-32.44,85.56-97.78Z";
@@ -10,7 +9,7 @@ const chinShadowPath =
 const facePath =
   "M121.04,49.93c13.33,191.17-95.55,171.29-120.64-.37C-3.58,22.33,23.1,1.25,50.6.23c34.15-2.95,68.55,22.65,70.44,49.7Z";
 const chinPath =
-    "M121.14.44c4.52,43.77,9.44,145.98-43.3,144.76C28.46,144.07,7.9,49.77.49.07";
+  "M121.14.44c4.52,43.77,9.44,145.98-43.3,144.76C28.46,144.07,7.9,49.77.49.07";
 
 function setup() {
   createAdaptiveCanvas(500, 800);
@@ -25,9 +24,8 @@ function setup() {
 
   S = new Spiral();
 
-  bodyStroke = interpolatePath(bodyPath, 120);
-  chinStroke = interpolatePath(chinPath, 35);
-
+  bodyStroke = interpolateStroke(bodyPath, 1000);
+  chinStroke = interpolateStroke(chinPath, 300);
 }
 
 function draw() {
@@ -37,68 +35,58 @@ function draw() {
 
   drawCharacter();
 
-
-
-  P += 0.001;
-  if (P > 1) {
-    P = 0;
-  }
 }
 
 function drawCharacter() {
+  // body
   push();
   translate(125, 480);
+  noStroke();
   fill(...palette.fg);
   let body = new Path2D(bodyPath);
   drawingContext.fill(body);
-  // drawingContext.stroke(body);
-  // draw a series of circles along the path, using the bodyStroke array and noise to define the radius of the "brush"
+  fill(0);
   for (let i = 0; i < bodyStroke.length; i++) {
-    let noiseVal = noise(frameCount * 0.02 + i) * 1.5;
-    let radius = map(noiseVal, 0, 1, 0, 10);
+    let radius = map(bodyStroke[i].strokeWeight, 0, 1, 1, 5);
     ellipse(bodyStroke[i].x, bodyStroke[i].y, radius, radius);
   }
-  let dot = myInterpolation(bodyPath, P);
-  fill(0);
-  ellipse(dot.x, dot.y, 10, 10);
   pop();
 
+  // chin shadow
   push();
-  translate(190, 390);
+  translate(190, 388);
   let chinShadow = new Path2D(chinShadowPath);
   fill(0, 0, 0, 0.6);
   drawingContext.fill(chinShadow);
   pop();
 
+  // face
   push();
-  translate(177, 380);
+  translate(177, 385);
   fill(...palette.fg);
   let face = new Path2D(facePath);
   drawingContext.fill(face);
   pop();
 
+  // chin
   push();
   translate(177, 430);
   fill(...palette.fg);
   let chin = new Path2D(chinPath);
   drawingContext.fill(chin);
-  // drawingContext.stroke(chin);
-  for (let i = 0; i < chinStroke.length; i++) {
-    let noiseVal = noise(frameCount * 0.02 + i) * 1.5;
-    let radius = map(noiseVal, 0, 1, 0, 10);
-    ellipse(chinStroke[i].x, chinStroke[i].y, radius, radius);
-  }  
-  dot = myInterpolation(chinPath, P);
+  noStroke();
   fill(0);
-  ellipse(dot.x, dot.y, 10, 10);
-
+  for (let i = 0; i < chinStroke.length; i++) {
+    let radius = map(chinStroke[i].strokeWeight, 0, 1, 1, 5);
+    ellipse(chinStroke[i].x, chinStroke[i].y, radius, radius);
+  }
   pop();
 }
 
 class Spiral {
   constructor() {
     this.x = scaler.width() / 2 - 10;
-    this.y = scaler.height() / 2 + 20;
+    this.y = scaler.height() / 2 + 22;
     this.radiusX = 0;
     this.radiusY = 0;
     this.angle = -1.4;
@@ -156,10 +144,11 @@ class Spiral {
   }
 }
 
-function myInterpolation(pathString, p) {
+
+function interpolateStroke(pathString, howManyPoints) {
   // Create an SVG path element
-  var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 
   // Set the path data
   path.setAttribute("d", pathString);
@@ -167,19 +156,14 @@ function myInterpolation(pathString, p) {
   // Append the path to the SVG (not appended to the document)
   svg.appendChild(path);
 
-  // Get the total length of the path
   var pathLength = path.getTotalLength();
 
-  // Get the point at 50% along the path
-  return path.getPointAtLength(pathLength * p);
-}
-
-function interpolatePath(path, howManyPoints) {
   let points = [];
   for (let i = 0; i < howManyPoints; i++) {
     let p = i / howManyPoints;
-    let point = myInterpolation(path, p);
-    points.push(point);
+    let point = path.getPointAtLength(pathLength * p);
+    let strokeWeight = noise(i * 0.025);
+    points.push({ x: point.x, y: point.y, strokeWeight: strokeWeight });
   }
   return points;
 }
