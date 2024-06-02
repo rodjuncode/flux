@@ -48,7 +48,7 @@ function setup() {
   bodyStroke = interpolateStroke(bodyPath, 1000);
   chinStroke = interpolateStroke(chinPath, 300);
 
-  // frameRate(10);
+  frameRate(16);
 
   // scaler.scaleCanvasTo(10);
 }
@@ -61,17 +61,19 @@ function draw() {
   drawCharacter();
 
   // balloon
-  push();
-  fill(255);
-  stroke(255);
-  rectMode(CENTER);
-  translate(scaler.width() / 2 - 5, scaler.height() / 2 - 220);
-  rotate(-0.025);
-  rect(0, 0, 100, 100, 10);
-  rotate(0.025);
-  imageMode(CENTER);
-  image(QR, 0, 0, 100, 100);
-  pop();
+  if (QR) {
+    push();
+    fill(255);
+    stroke(255);
+    rectMode(CENTER);
+    translate(scaler.width() / 2 - 5, scaler.height() / 2 - 220);
+    rotate(-0.025);
+    rect(0, 0, 100, 100, 10);
+    rotate(0.025);
+    imageMode(CENTER);
+    image(QR, 0, 0, 100, 100);
+    pop();
+  }
 
   // draws a white frame with rounded corner
   noFill();
