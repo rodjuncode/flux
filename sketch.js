@@ -2,14 +2,27 @@ let palette = {};
 let S;
 let bodyStroke, chinStroke, chinShadowStroke, faceStroke;
 
+// read 'f' parameter from URL
+const urlParams = new URLSearchParams(window.location.search);
+const f = urlParams.get("f");
+
+const UPTO = 2100;
+const FRAMES_QTY = 200;
+
 const bodyPath =
-  "M87.23,234.72C129.71,157.64,73.9.5,73.9.5h101.11s13.33,122,53.33,203.33,99.33,128.67,99.33,128.67H1.68s49.56-32.44,85.56-97.78Z";
+  "M1.63,334.28s58-39.56,90.79-110.63S73.86.5,73.86.5h101.11s20.52,109.81,44.14,182.88,108.52,149.12,108.52,149.12l-326,1.78Z";
 const chinShadowPath =
   "M47.41.03c25.5.6,43.43,15.94,52.51,26.03,4.43,4.93,7.22,11.5,7.98,18.56,3.86,36.2,13.33,159.56-37.3,158.22C21.13,201.51,4.38,77.84.18,36.78-1.1,24.26,4.62,12.16,14.46,6.73,21.73,2.72,32.27-.33,47.41.03Z";
 const facePath =
   "M121.04,49.93c13.33,191.17-95.55,171.29-120.64-.37C-3.58,22.33,23.1,1.25,50.6.23c34.15-2.95,68.55,22.65,70.44,49.7Z";
 const chinPath =
   "M121.14.44c4.52,43.77,9.44,145.98-43.3,144.76C28.46,144.07,7.9,49.77.49.07";
+const faceShadowPath =
+  "M80.42,79.96c-6.66-10.53,10.36-35.64,10.36-35.64M47.38,76.04s10.65-16.45,0-8c-11.55,9.17-18,2.17-18,2.17M65.34,108.78c-7-4.07-21.19,2.34-21.19,2.34M6.84,22.03c3.63,2.25,6.41,5.65,8.11,9.57l11.27,25.99s-5.33-23.11-11.56-33.33S0,21.44,0,21.44c1.71-1.78,4.37-.94,6.84.59ZM83.83,1.17c-19.18-5.53-43.37,10.33-43.37,10.33M64.23,90.32c-11.31-1.84-28.14,3.54-28.14,3.54M108.31,8.94s-5.22,18.32-1.53,23.7";
+const faceGlowPath =
+  "M.96,56.71c12.17,68.68,54.13,139.43,81.77,127.15s37.19-68.33,25.02-137.02C95.59-21.84-11.2-11.97.96,56.71Z";
+const bodyGlowPath =
+  "M76.04,41.52C94.45,65.86,116.99,0,116.99,0c0,0,55.77,147.34,72.23,171.34,16,23.33,51.33,49.33,51.33,49.33.5-1.93-253.78,5.46-240.01,0,14.85-5.89,41.81-40.52,50.33-62.9,8.52-22.38,21.61-140.5,21.61-140.5,0,0-18.86-5.39,3.56,24.24Z";
 
 function setup() {
   createAdaptiveCanvas(500, 800);
@@ -26,15 +39,22 @@ function setup() {
 
   bodyStroke = interpolateStroke(bodyPath, 1000);
   chinStroke = interpolateStroke(chinPath, 300);
+
+  // frameRate(10);
 }
 
 function draw() {
   background(...palette.bg);
 
-  S.draw(min(frameCount * 2, 2000));
+  S.draw(min(((f ? f : frameCount) * UPTO) / FRAMES_QTY, UPTO));
 
   drawCharacter();
 
+  // draws a white frame with rounded corner
+  noFill();
+  stroke(255);
+  strokeWeight(30);
+  rect(0, 0, scaler.width(), scaler.height(), 30);
 }
 
 function drawCharacter() {
@@ -62,7 +82,7 @@ function drawCharacter() {
 
   // face
   push();
-  translate(177, 385);
+  translate(177, 380);
   fill(...palette.fg);
   let face = new Path2D(facePath);
   drawingContext.fill(face);
@@ -81,6 +101,30 @@ function drawCharacter() {
     ellipse(chinStroke[i].x, chinStroke[i].y, radius, radius);
   }
   pop();
+
+  // face glow
+  push();
+  translate(180, 388);
+  fill(0, 0, 100, 0.4);
+  let faceGlow = new Path2D(faceGlowPath);
+  drawingContext.fill(faceGlow);
+  pop();
+
+  // body glow
+  push();
+  translate(175, 571);
+  fill(0, 0, 100, 0.4);
+  let bodyGlow = new Path2D(bodyGlowPath);
+  drawingContext.fill(bodyGlow);
+  pop();
+
+  // faceshadow
+  push();
+  translate(198, 440);
+  fill(0, 0, 0, 0.8);
+  let faceShadow = new Path2D(faceShadowPath);
+  drawingContext.fill(faceShadow);
+  pop();
 }
 
 class Spiral {
@@ -93,6 +137,7 @@ class Spiral {
     this.curveAngle = 0;
     this.delta = 3;
     this.stroke = [0, 0, 100]; // white
+    // this.stroke = palette.fg; // fg
     this.strokeWeight = 1;
 
     this.reset();
@@ -102,14 +147,11 @@ class Spiral {
     push();
     translate(this.x, this.y);
     rotate(this.angle);
-    fill(...palette.bg);
-    noStroke();
-    ellipse(0, 0, 10, 10); // draw a circle at the center of the canvas
     stroke(...this.stroke);
     strokeWeight(this.strokeWeight);
     noFill();
     beginShape();
-    for (let i = 0; i < upTo; i++) {
+    for (let i = 0; i < upTo + 150; i++) {
       let noiseValX = noise(frameCount * 0.02 + i) * 1.5;
       let noiseValY = noise(frameCount * 0.05 + i) * 1.5; // offset the noise value for y to create a more dynamic movement
 
@@ -143,7 +185,6 @@ class Spiral {
     };
   }
 }
-
 
 function interpolateStroke(pathString, howManyPoints) {
   // Create an SVG path element
