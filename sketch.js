@@ -1,6 +1,16 @@
 let palette = {};
 let S;
 let P = 0;
+let bodyStroke, chinStroke;
+
+const bodyPath =
+  "M87.23,234.72C129.71,157.64,73.9.5,73.9.5h101.11s13.33,122,53.33,203.33,99.33,128.67,99.33,128.67H1.68s49.56-32.44,85.56-97.78Z";
+const chinShadowPath =
+  "M47.41.03c25.5.6,43.43,15.94,52.51,26.03,4.43,4.93,7.22,11.5,7.98,18.56,3.86,36.2,13.33,159.56-37.3,158.22C21.13,201.51,4.38,77.84.18,36.78-1.1,24.26,4.62,12.16,14.46,6.73,21.73,2.72,32.27-.33,47.41.03Z";
+const facePath =
+  "M121.04,49.93c13.33,191.17-95.55,171.29-120.64-.37C-3.58,22.33,23.1,1.25,50.6.23c34.15-2.95,68.55,22.65,70.44,49.7Z";
+const chinPath =
+    "M121.14.44c4.52,43.77,9.44,145.98-43.3,144.76C28.46,144.07,7.9,49.77.49.07";
 
 function setup() {
   createAdaptiveCanvas(500, 800);
@@ -14,6 +24,10 @@ function setup() {
   palette.bg = [(palette.fg[0] + 180) % 360, 57, 98];
 
   S = new Spiral();
+
+  bodyStroke = interpolatePath(bodyPath, 120);
+  chinStroke = interpolatePath(chinPath, 35);
+
 }
 
 function draw() {
@@ -21,10 +35,11 @@ function draw() {
 
   S.draw(min(frameCount * 2, 2000));
 
-
   drawCharacter();
 
-  P+=0.001;
+
+
+  P += 0.001;
   if (P > 1) {
     P = 0;
   }
@@ -32,46 +47,50 @@ function draw() {
 
 function drawCharacter() {
   push();
-  translate(125,480);
+  translate(125, 480);
   fill(...palette.fg);
-  let bodyPath = "M87.23,234.72C129.71,157.64,73.9.5,73.9.5h101.11s13.33,122,53.33,203.33,99.33,128.67,99.33,128.67H1.68s49.56-32.44,85.56-97.78Z";
   let body = new Path2D(bodyPath);
   drawingContext.fill(body);
-  drawingContext.stroke(body);
+  // drawingContext.stroke(body);
+  // draw a series of circles along the path, using the bodyStroke array and noise to define the radius of the "brush"
+  for (let i = 0; i < bodyStroke.length; i++) {
+    let noiseVal = noise(frameCount * 0.02 + i) * 1.5;
+    let radius = map(noiseVal, 0, 1, 0, 10);
+    ellipse(bodyStroke[i].x, bodyStroke[i].y, radius, radius);
+  }
   let dot = myInterpolation(bodyPath, P);
   fill(0);
   ellipse(dot.x, dot.y, 10, 10);
   pop();
 
-  
-
   push();
-  translate(190,390);
-  let chinShadowPath = "M47.41.03c25.5.6,43.43,15.94,52.51,26.03,4.43,4.93,7.22,11.5,7.98,18.56,3.86,36.2,13.33,159.56-37.3,158.22C21.13,201.51,4.38,77.84.18,36.78-1.1,24.26,4.62,12.16,14.46,6.73,21.73,2.72,32.27-.33,47.41.03Z"
+  translate(190, 390);
   let chinShadow = new Path2D(chinShadowPath);
-  fill(0, 0, 0, 0.7);
+  fill(0, 0, 0, 0.6);
   drawingContext.fill(chinShadow);
   pop();
 
   push();
   translate(177, 380);
   fill(...palette.fg);
-  let face = new Path2D(
-    "M121.04,49.93c13.33,191.17-95.55,171.29-120.64-.37C-3.58,22.33,23.1,1.25,50.6.23c34.15-2.95,68.55,22.65,70.44,49.7Z"
-  );
+  let face = new Path2D(facePath);
   drawingContext.fill(face);
   pop();
 
   push();
   translate(177, 430);
   fill(...palette.fg);
-  let chinPath = "M121.14.44c4.52,43.77,9.44,145.98-43.3,144.76C28.46,144.07,7.9,49.77.49.07";
   let chin = new Path2D(chinPath);
   drawingContext.fill(chin);
-  drawingContext.stroke(chin);
+  // drawingContext.stroke(chin);
+  for (let i = 0; i < chinStroke.length; i++) {
+    let noiseVal = noise(frameCount * 0.02 + i) * 1.5;
+    let radius = map(noiseVal, 0, 1, 0, 10);
+    ellipse(chinStroke[i].x, chinStroke[i].y, radius, radius);
+  }  
   dot = myInterpolation(chinPath, P);
   fill(0);
-  ellipse(dot.x, dot.y, 10, 10);  
+  ellipse(dot.x, dot.y, 10, 10);
 
   pop();
 }
@@ -153,5 +172,14 @@ function myInterpolation(pathString, p) {
 
   // Get the point at 50% along the path
   return path.getPointAtLength(pathLength * p);
+}
 
+function interpolatePath(path, howManyPoints) {
+  let points = [];
+  for (let i = 0; i < howManyPoints; i++) {
+    let p = i / howManyPoints;
+    let point = myInterpolation(path, p);
+    points.push(point);
+  }
+  return points;
 }
