@@ -48,7 +48,7 @@ function setup() {
   bodyStroke = interpolateStroke(bodyPath, 1000);
   chinStroke = interpolateStroke(chinPath, 300);
 
-  frameRate(16);
+  frameRate(QR ? 16 : 30);
 
   // scaler.scaleCanvasTo(10);
 }
