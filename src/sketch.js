@@ -1,13 +1,21 @@
-let palette = {};
-let S;
-let bodyStroke, chinStroke, chinShadowStroke, faceStroke;
-
 // read 'f' parameter from URL
 const urlParams = new URLSearchParams(window.location.search);
 const f = urlParams.get("f");
 
+let QR;
+function preload() {
+  if (f) {
+    QR = loadImage("assets/qr/qr" + f + ".png");
+  }
+}
+
+let palette = {};
+let S;
+let bodyStroke, chinStroke, chinShadowStroke, faceStroke;
+
 const UPTO = 2100;
-const FRAMES_QTY = 200;
+const FRAMES_QTY = 20;
+const BASE_PROGRESS = 150;
 
 const bodyPath =
   "M1.63,334.28s58-39.56,90.79-110.63S73.86.5,73.86.5h101.11s20.52,109.81,44.14,182.88,108.52,149.12,108.52,149.12l-326,1.78Z";
@@ -41,12 +49,14 @@ function setup() {
   chinStroke = interpolateStroke(chinPath, 300);
 
   // frameRate(10);
+
+  // scaler.scaleCanvasTo(10);
 }
 
 function draw() {
   background(...palette.bg);
 
-  S.draw(min(((f ? f : frameCount) * UPTO) / FRAMES_QTY, UPTO));
+  S.draw(min((f ? f : frameCount) * (UPTO / FRAMES_QTY), UPTO));
 
   drawCharacter();
 
@@ -58,6 +68,9 @@ function draw() {
   translate(scaler.width() / 2 - 5, scaler.height() / 2 - 220);
   rotate(-0.025);
   rect(0, 0, 100, 100, 10);
+  rotate(0.025);
+  imageMode(CENTER);
+  image(QR, 0, 0, 100, 100);
   pop();
 
   // draws a white frame with rounded corner
@@ -65,6 +78,8 @@ function draw() {
   stroke(255);
   strokeWeight(30);
   rect(0, 0, scaler.width(), scaler.height(), 25);
+
+  // noLoop();
 }
 
 function drawCharacter() {
@@ -161,7 +176,7 @@ class Spiral {
     strokeWeight(this.strokeWeight);
     noFill();
     beginShape();
-    for (let i = 0; i < upTo + 150; i++) {
+    for (let i = 0; i < upTo + BASE_PROGRESS; i++) {
       let noiseValX = noise(frameCount * 0.02 + i) * 1.5;
       let noiseValY = noise(frameCount * 0.05 + i) * 1.5; // offset the noise value for y to create a more dynamic movement
 
